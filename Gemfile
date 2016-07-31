@@ -5,3 +5,4 @@ gem 'sinatra', '1.4.7'
 gem 'ffi-gphoto2', '0.6.0'
 
 gem 'os', '0.9.6'
+gem 'thin'

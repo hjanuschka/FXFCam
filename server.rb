@@ -23,6 +23,11 @@ class FXFCam
     device.close unless device.nil?
     self.device = GPhoto2::Camera.first
     puts "Camera found #{device.inspect}"
+    self.device.reload
+    data = device.preview.data
+    device.update(autofocusdrive: true)
+    #do a dummy preview
+    
   #      break
   rescue => error
     puts "Camera cannot be initiated - retry'ing #{error.inspect}"
@@ -36,28 +41,27 @@ end
 fxfcam = FXFCam.new
 
 get '/liveview' do
-  return ''
   boundary = 'some_shit'
-
   headers \
-    'Cache-Control' => 'no-cache, private',
-    'Pragma'        => 'no-cache',
-    'Content-type'  => "multipart/x-mixed-replace; boundary=#{boundary}"
+     'Cache-Control' => 'no-cache, private',
+     'Pragma'        => 'no-cache',
+     'Content-type'  => "multipart/x-mixed-replace; boundary=#{boundary}"
 
   stream(:keep_open) do |out|
     loop do
       content = fxfcam.device.preview.data
-      puts content.inspect
+      
       out << "Content-type: image/jpeg\n\n"
       out << content
-      out << "\n\n--#{boundary}\n\n"
-
-      sleep 1
+      out << "--#{boundary}"
+      
+      sleep 0.5
     end
   end
 end
 
 set :port, 8888
+set :server, :thin
 
 # REST INTERFACE
 get '/capture' do
@@ -72,17 +76,17 @@ get '/capture' do
     return_message[:cca_response] = { data: { image: Base64.encode64(pic.data) } }
     return_message.to_json
   rescue => error
-    fxfcam.died
+    #fxfcam.died
     headers('Content-Type' => 'application/json')
     return_message[:status] = 'failed'
     return_message[:error] = true
     return_message[:code] = error.code
     return_message[:raw_msg] = error.message
-    return_message.to_json
     if error.code == -7 || error.code == -53
       puts "HARD ERROR #{error.message}"
       Process.kill('KILL', Process.pid)
     end
+    return_message.to_json
   end
 end
 get '/preview' do
@@ -91,7 +95,7 @@ get '/preview' do
     headers('Content-Type' => 'image/jpeg')
     fxfcam.device.preview.data
   rescue => error
-    fxfcam.died
+    #fxfcam.died
     headers('Content-Type' => 'application/json')
     return_message[:status] = 'failed'
     return_message[:error] = true
@@ -99,10 +103,10 @@ get '/preview' do
     return_message[:raw_msg] = error.message
     # error -7 I/O error
     # error -53 Could not claim USB
-  #  if error.code == -7 || error.code == -53
+    if error.code != -110 #-110 generic error - maybe no focus et all
       puts "HARD ERROR #{error.message}"
       Process.kill('KILL', Process.pid)
-#    end
+    end
     return_message.to_json
   end
 end

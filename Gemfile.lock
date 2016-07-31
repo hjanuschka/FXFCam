@@ -5,6 +5,7 @@ GEM
     ffi-gphoto2 (0.6.0)
       ffi (~> 1.9.0)
     json (2.0.2)
+    os (0.9.6)
     rack (1.6.4)
     rack-protection (1.5.3)
       rack
@@ -20,7 +21,8 @@ PLATFORMS
 DEPENDENCIES
   ffi-gphoto2 (= 0.6.0)
   json (= 2.0.2)
+  os (= 0.9.6)
   sinatra (= 1.4.7)
 
 BUNDLED WITH
-   1.11.2
+   1.12.5

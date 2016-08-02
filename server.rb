@@ -4,41 +4,16 @@ require 'json'
 require 'os'
 require 'base64'
 
-class FXFCam
-  attr_accessor :device
-  def initialize
-    puts 'FXF Cam init'
-    init_cam
-  end
+require './lib/fxf/controller.rb'
+require './lib/fxf/cam.rb'
+require './lib/fxf/cleaner.rb'
 
-  def died
-    # init_cam
-    device.close unless device.nil?
-  end
+set :port, 8888
+set :server, :thin
+disable :logging
 
-  def init_cam
-    # while true  do
+preview = FXF::Controller.new
 
-    `killall -9 PTPCamera` if OS.mac?
-    device.close unless device.nil?
-    self.device = GPhoto2::Camera.first
-    puts "Camera found #{device.inspect}"
-    self.device.reload
-    data = device.preview.data
-    device.update(autofocusdrive: true)
-    #do a dummy preview
-    
-  #      break
-  rescue => error
-    puts "Camera cannot be initiated - retry'ing #{error.inspect}"
-    sleep 2
-    exit
-
-    # end
-  end
-end
-
-fxfcam = FXFCam.new
 
 get '/liveview' do
   boundary = 'some_shit'
@@ -49,7 +24,7 @@ get '/liveview' do
 
   stream(:keep_open) do |out|
     loop do
-      content = fxfcam.device.preview.data
+      content = preview.preview
       
       out << "Content-type: image/jpeg\n\n"
       out << content
@@ -60,8 +35,6 @@ get '/liveview' do
   end
 end
 
-set :port, 8888
-set :server, :thin
 
 # REST INTERFACE
 get '/capture' do
@@ -70,12 +43,13 @@ get '/capture' do
   return_message = {}
   begin
     headers('Content-Type' => 'application/json')
-    pic = fxfcam.device.capture
+    pic = preview.capture
 
     return_message[:status] = 'success'
     return_message[:cca_response] = { data: { image: Base64.encode64(pic.data) } }
     return_message.to_json
   rescue => error
+    puts error.inspect
     #fxfcam.died
     headers('Content-Type' => 'application/json')
     return_message[:status] = 'failed'
@@ -93,7 +67,7 @@ get '/preview' do
   return_message = {}
   begin
     headers('Content-Type' => 'image/jpeg')
-    fxfcam.device.preview.data
+    preview.preview
   rescue => error
     #fxfcam.died
     headers('Content-Type' => 'application/json')

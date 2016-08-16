@@ -9,6 +9,7 @@ require './lib/fxf/cam.rb'
 require './lib/fxf/cleaner.rb'
 
 set :port, 8888
+set :bind, '0.0.0.0'
 set :server, :thin
 disable :logging
 
@@ -62,6 +63,9 @@ get '/capture' do
     end
     return_message.to_json
   end
+end
+get '/config' do
+	preview.cam.device.config.to_json	
 end
 get '/preview' do
   return_message = {}

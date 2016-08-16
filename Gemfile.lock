@@ -1,6 +1,8 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    daemons (1.2.3)
+    eventmachine (1.2.0.1)
     ffi (1.9.14)
     ffi-gphoto2 (0.6.0)
       ffi (~> 1.9.0)
@@ -13,6 +15,10 @@ GEM
       rack (~> 1.5)
       rack-protection (~> 1.4)
       tilt (>= 1.3, < 3)
+    thin (1.7.0)
+      daemons (~> 1.0, >= 1.0.9)
+      eventmachine (~> 1.0, >= 1.0.4)
+      rack (>= 1, < 3)
     tilt (2.0.5)
 
 PLATFORMS
@@ -23,6 +29,7 @@ DEPENDENCIES
   json (= 2.0.2)
   os (= 0.9.6)
   sinatra (= 1.4.7)
+  thin
 
 BUNDLED WITH
    1.12.5

@@ -15,27 +15,25 @@ disable :logging
 
 preview = FXF::Controller.new
 
-
 get '/liveview' do
   boundary = 'some_shit'
   headers \
-     'Cache-Control' => 'no-cache, private',
-     'Pragma'        => 'no-cache',
-     'Content-type'  => "multipart/x-mixed-replace; boundary=#{boundary}"
+    'Cache-Control' => 'no-cache, private',
+    'Pragma'        => 'no-cache',
+    'Content-type'  => "multipart/x-mixed-replace; boundary=#{boundary}"
 
   stream(:keep_open) do |out|
     loop do
       content = preview.preview
-      
+
       out << "Content-type: image/jpeg\n\n"
       out << content
       out << "--#{boundary}"
-      
+
       sleep 0.5
     end
   end
 end
-
 
 # REST INTERFACE
 get '/capture' do
@@ -51,7 +49,7 @@ get '/capture' do
     return_message.to_json
   rescue => error
     puts error.inspect
-    #fxfcam.died
+    # fxfcam.died
     headers('Content-Type' => 'application/json')
     return_message[:status] = 'failed'
     return_message[:error] = true
@@ -65,7 +63,7 @@ get '/capture' do
   end
 end
 get '/config' do
-	preview.cam.device.config.to_json	
+  preview.cam.device.config.to_json
 end
 get '/preview' do
   return_message = {}
@@ -73,7 +71,7 @@ get '/preview' do
     headers('Content-Type' => 'image/jpeg')
     preview.preview
   rescue => error
-    #fxfcam.died
+    # fxfcam.died
     headers('Content-Type' => 'application/json')
     return_message[:status] = 'failed'
     return_message[:error] = true

@@ -1,16 +1,18 @@
 module FXF
   class Cleaner
-    attr_accessor :delete, :output,:cam
+    attr_accessor :delete, :output, :cam
     # Recursively list folder contents with extended metadata.
     MAGNITUDES = %w(bytes KiB MiB GiB).freeze
     def initialize(params = {})
-        @delete = params.fetch(:delete, false)
-        @output = params.fetch(:output, true)
-        @cam = params.fetch(:cam, nil)
+      @delete = params.fetch(:delete, false)
+      @output = params.fetch(:output, true)
+      @cam = params.fetch(:cam, nil)
     end
-    def cleanup 
-        visit(cam.device.filesystem)
+
+    def cleanup
+      visit(cam.device.filesystem)
     end
+
     def format_filesize(size, precision = 1)
       n = 0
 
@@ -21,6 +23,7 @@ module FXF
 
       "%.#{precision}f %s" % [size, MAGNITUDES[n]]
     end
+
     def visit(folder)
       files = folder.files
       files.each do |file|
@@ -31,24 +34,13 @@ module FXF
         # with it.
         size = format_filesize(info.size)
         mtime = info.mtime.utc.iso8601
-        
-        
-        if @output
-          puts "Deleting #{name}"
-        end
-        if @delete 
-          
-            file.delete
-          
-        end
-        
-          
+
+        puts "Deleting #{name}" if @output
+        file.delete if @delete
       end
       folder.folders.each { |child| visit(child) }
-      
+
     rescue => error
-      
-    
     end
   end
 end

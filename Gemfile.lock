@@ -1,11 +1,17 @@
+GIT
+  remote: https://github.com/hjanuschka/ffi-gphoto2
+  revision: 33a2544b0cb8c6812598a3745eb37cd23f2f76c3
+  specs:
+    ffi-gphoto2 (0.6.0)
+      ffi (~> 1.9.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
-    daemons (1.2.3)
+    daemons (1.2.4)
     eventmachine (1.2.0.1)
     ffi (1.9.14)
-    ffi-gphoto2 (0.6.0)
-      ffi (~> 1.9.0)
+    get_process_mem (0.2.1)
     json (2.0.2)
     os (0.9.6)
     rack (1.6.4)
@@ -25,7 +31,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  ffi-gphoto2 (= 0.6.0)
+  ffi-gphoto2!
+  get_process_mem
   json (= 2.0.2)
   os (= 0.9.6)
   sinatra (= 1.4.7)

@@ -59,8 +59,8 @@ module FXF
           file = cam.device.preview
           self.preview = file.data
         end
-        file.release
-        # puts mem.inspect
+        #file.release
+        #puts mem.inspect
         break if shutdown
       end
     rescue => error

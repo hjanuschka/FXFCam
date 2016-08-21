@@ -1,6 +1,7 @@
 GIT
-  remote: https://github.com/hjanuschka/ffi-gphoto2
-  revision: 33a2544b0cb8c6812598a3745eb37cd23f2f76c3
+  remote: https://github.com/zaeleus/ffi-gphoto2
+  revision: 441dbdcf28293a3a054ff23652dd38ce0460cbe6
+  ref: 441dbdcf28293a3a054ff23652dd38ce0460cbe6
   specs:
     ffi-gphoto2 (0.6.0)
       ffi (~> 1.9.0)

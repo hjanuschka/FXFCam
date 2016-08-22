@@ -8,7 +8,7 @@ while ( true );
 do 
 	if [ "$una" = "Linux" ]
 	then
-        	for i in  $(ls /sys/bus/pci/drivers/ehci-pci/|grep :); do echo $i > /sys/bus/pci/drivers/ehci-pci/unbind; echo $i > /sys/bus/pci/drivers/ehci-pci/bind; done
+        	lsusb |grep Canon|awk  '{split($6,dev, ":"); print "usb_modeswitch -v 0x"dev[1]" -p 0x"dev[2]" --reset-usb" }'|bash
 	fi
 	bundle exec ruby server.rb ;
 	sleep 2;

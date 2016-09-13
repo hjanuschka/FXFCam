@@ -131,10 +131,10 @@ post '/print_image' do
 
   file = Tempfile.new(['picbox', '.jpg'])
 
-  img.write('1.jpg')
-  # a = img.write(file.path)
+  #img.write('1.jpg')
+   a = img.write(file.path)
 
-  # `lpr -o landscape -o fit-to-page -o media=Custom.4x6 #{file.path}`
+  `lpr -o landscape -o fit-to-page -o media=Custom.4x6 #{file.path}`
   File.unlink(file.path)
   File.unlink(qrfile.path) unless qr.nil?
   File.unlink(watermarkfile.path) unless watermark.nil?

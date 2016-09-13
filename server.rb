@@ -96,9 +96,7 @@ post '/print_image' do
       resize_exactly_to: false,
       fill: 'white',
       color: 'black',
-      size: 120,
-      border_modules: 4,
-      module_px_size: 6,
+      module_px_size: 5,
       file: nil # path to write
     )
     IO.write(qrfile.path, png.to_s)
@@ -106,6 +104,8 @@ post '/print_image' do
 
   img = MiniMagick::Image.read(decode_base64_content)
 
+  img.resize "1200x"
+  
   unless watermark.nil?
     # add watermark
 
@@ -126,12 +126,12 @@ post '/print_image' do
   # add Willi
   img.combine_options do |c|
     c.gravity 'NorthEast'
-    c.draw "image Over 20,20 0,0 '#{willifile.path}'"
+    c.draw "image Over 20,20 70,70 '#{willifile.path}'"
   end
 
   file = Tempfile.new(['picbox', '.jpg'])
 
-  #img.write('1.jpg')
+  #img.write('8.jpg')
    a = img.write(file.path)
 
   `lpr -o landscape -o fit-to-page -o media=Custom.4x6 #{file.path}`

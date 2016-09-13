@@ -3,6 +3,9 @@ require 'sinatra'
 require 'json'
 require 'os'
 require 'base64'
+require 'mini_magick'
+require 'open-uri'
+require 'rqrcode'
 
 require './lib/fxf/controller.rb'
 require './lib/fxf/cam.rb'
@@ -64,6 +67,79 @@ get '/capture' do
 end
 get '/config' do
   preview.cam.device.config.to_json
+end
+post '/print_image' do
+  b64 = params[:b64]
+  watermark = params[:watermark]
+  qr = params[:qr]
+  decode_base64_content = Base64.decode64(b64.split('base64,').last)
+
+  # Fetch Willi Logo
+  willifile = Tempfile.new(['willi', '.png'])
+  download = open('https://www.willi.krone.at/willi-logo@2x.png')
+  IO.copy_stream(download, willifile)
+
+  unless watermark.nil?
+    # Fetch Watermark
+    watermarkfile = Tempfile.new(['watermark', '.png'])
+    download = open(watermark)
+    IO.copy_stream(download, watermarkfile.path)
+  end
+
+  unless qr.nil?
+    qrfile = Tempfile.new(['qr', '.png'])
+    # generate QR
+    qrcode = RQRCode::QRCode.new(qr)
+    # With default options specified explicitly
+    png = qrcode.as_png(
+      resize_gte_to: false,
+      resize_exactly_to: false,
+      fill: 'white',
+      color: 'black',
+      size: 120,
+      border_modules: 4,
+      module_px_size: 6,
+      file: nil # path to write
+    )
+    IO.write(qrfile.path, png.to_s)
+  end
+
+  img = MiniMagick::Image.read(decode_base64_content)
+
+  unless watermark.nil?
+    # add watermark
+
+    img.combine_options do |c|
+      c.gravity 'SouthEast'
+      c.draw "image Over 20,20 0,0 '#{watermarkfile.path}'"
+    end
+  end
+
+  unless qr.nil?
+    # add QR
+    img.combine_options do |c|
+      c.gravity 'SouthWest'
+      c.draw "image Over 20,20 0,0 '#{qrfile.path}'"
+    end
+  end
+
+  # add Willi
+  img.combine_options do |c|
+    c.gravity 'NorthEast'
+    c.draw "image Over 20,20 0,0 '#{willifile.path}'"
+  end
+
+  file = Tempfile.new(['picbox', '.jpg'])
+
+  img.write('1.jpg')
+  # a = img.write(file.path)
+
+  # `lpr -o landscape -o fit-to-page -o media=Custom.4x6 #{file.path}`
+  File.unlink(file.path)
+  File.unlink(qrfile.path) unless qr.nil?
+  File.unlink(watermarkfile.path) unless watermark.nil?
+  File.unlink(willifile.path)
+  'DONE'
 end
 get '/preview' do
   return_message = {}

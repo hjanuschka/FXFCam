@@ -6,6 +6,7 @@ require 'base64'
 require 'mini_magick'
 require 'open-uri'
 require 'rqrcode'
+require 'cupsffi'
 
 require './lib/fxf/controller.rb'
 require './lib/fxf/cam.rb'
@@ -16,7 +17,7 @@ set :bind, '0.0.0.0'
 set :server, :thin
 disable :logging
 
-preview = FXF::Controller.new
+preview = FXF::Controller.new if ENV['ONLY_PRINT'].nil?
 
 get '/liveview' do
   boundary = 'some_shit'
@@ -104,8 +105,8 @@ post '/print_image' do
 
   img = MiniMagick::Image.read(decode_base64_content)
 
-  img.resize "1200x"
-  
+  img.resize '1200x'
+
   unless watermark.nil?
     # add watermark
 
@@ -131,10 +132,16 @@ post '/print_image' do
 
   file = Tempfile.new(['picbox', '.jpg'])
 
-  #img.write('8.jpg')
-   a = img.write(file.path)
+  # img.write('8.jpg')
+  a = img.write(file.path)
 
-  `lpr -o landscape -o fit-to-page -o media=Custom.4x6 #{file.path}`
+  # `lpr -o landscape -o fit-to-page -o media=Custom.4x6 #{file.path}`
+  printers = CupsPrinter.get_all_printer_names
+  printer = CupsPrinter.new(printers.first)
+  job = printer.print_file(file.path, 'PageSize' => 'w288h432', 'StpiShrinkOutput' => 'Expand', 'ColorModel' => 'RGB')
+
+  puts "printing #{job.inspect}"
+
   File.unlink(file.path)
   File.unlink(qrfile.path) unless qr.nil?
   File.unlink(watermarkfile.path) unless watermark.nil?

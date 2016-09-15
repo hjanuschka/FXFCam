@@ -7,10 +7,14 @@ require 'mini_magick'
 require 'open-uri'
 require 'rqrcode'
 require 'cupsffi'
+require 'fileutils'
+require 'rest-client'
 
 require './lib/fxf/controller.rb'
 require './lib/fxf/cam.rb'
+require './lib/fxf/queue.rb'
 require './lib/fxf/cleaner.rb'
+
 
 set :port, 8888
 set :bind, '0.0.0.0'
@@ -18,6 +22,7 @@ set :server, :thin
 disable :logging
 
 preview = FXF::Controller.new if ENV['ONLY_PRINT'].nil?
+queue_worker = FXF::Queue.new
 
 get '/liveview' do
   boundary = 'some_shit'
@@ -46,10 +51,16 @@ get '/capture' do
   return_message = {}
   begin
     headers('Content-Type' => 'application/json')
-    pic = preview.capture
 
+    if ENV['ONLY_PRINT'] != nil
+      picdata=File.read("default.jpg");
+    else
+      pic = preview.capture
+      picdata=pic.data;
+    end
+    
     return_message[:status] = 'success'
-    return_message[:cca_response] = { data: { image: Base64.encode64(pic.data) } }
+    return_message[:cca_response] = { data: { image: Base64.encode64(picdata) } }
     return_message.to_json
   rescue => error
     puts error.inspect
@@ -69,7 +80,22 @@ end
 get '/config' do
   preview.cam.device.config.to_json
 end
+post '/postbox' do
+  headers 'Access-Control-Allow-Origin' => '*'
+  json_doc = params;
+  #Store it to Queue
+
+  file = Tempfile.new(["queue", ".json"])
+  file << json_doc.to_json
+  file.flush
+  FileUtils.cp(file.path, "QUEUE/WAIT/")
+  file.close
+  
+  headers('Content-Type' => 'application/json')
+  return {"asdasd" => 123}.to_json
+end
 post '/print_image' do
+  headers 'Access-Control-Allow-Origin' => '*'
   b64 = params[:b64]
   watermark = params[:watermark]
   qr = params[:qr]
@@ -149,10 +175,18 @@ post '/print_image' do
   'DONE'
 end
 get '/preview' do
+  
   return_message = {}
   begin
     headers('Content-Type' => 'image/jpeg')
+    if ENV['ONLY_PRINT'] != nil
+      File.read("default.jpg")
+    else
     preview.preview
+    end
+    
+    
+    
   rescue => error
     # fxfcam.died
     headers('Content-Type' => 'application/json')

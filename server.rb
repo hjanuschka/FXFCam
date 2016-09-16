@@ -87,7 +87,7 @@ post '/postbox' do
   file = Tempfile.new(["queue", ".json"])
   file << json_doc.to_json
   file.flush
-  FileUtils.cp(file.path, "QUEUE/WAIT/")
+  FileUtils.mv(file.path, "QUEUE/WAIT/")
   file.close
   
   headers('Content-Type' => 'application/json')

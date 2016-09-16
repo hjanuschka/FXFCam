@@ -27,30 +27,12 @@ module FXF
       puts "SHOTTED"
       
       r = cap.data.dup
-      
-      
-      begin
-        
-        image = MiniMagick::Image.read(r)
-        puts image.path #=> "/var/folders/k7/6zx6dx6x7ys3rv3srh0nyfj00000gn/T/magick20140921-75881-1yho3zc.jpg"
-        image.resize "1200x"
-        image.format "jpg"
-        image.write "resized.jpg"
-        
-        puts "RESIZED IT"
-        
-        r = IO.binread("resized.jpg")
-    rescue => err
-      puts err.inspect
-      puts err.backtrace
-    end
-      
-      
+      random_key=(0...12).map { (65 + rand(26)).chr }.join
+      IO.binwrite("public/#{random_key}.jpg", r);
       set_config("preview");
       puts "PREVIEW SET"
       puts "PIC LENGTH: #{r.length}" 
-      r
-    
+      random_key
     end
     def reopen
       

@@ -53,13 +53,13 @@ get '/capture' do
     headers('Content-Type' => 'application/json')
 
     if ENV['ONLY_PRINT'] != nil
-      picdata=File.read("default.jpg");
+      picdata="default.jpg"
     else
       picdata = preview.capture
     end
     
     return_message[:status] = 'success'
-    return_message[:cca_response] = { data: { image: Base64.encode64(picdata) } }
+    return_message[:cca_response] = { data: { image: picdata } }
     return_message.to_json
   rescue => error
     puts error.backtrace
@@ -81,6 +81,13 @@ get '/config' do
 end
 post '/postbox' do
   headers 'Access-Control-Allow-Origin' => '*'
+  binary_pic = IO.binread("public/#{params[:picbox_data]}.jpg");
+  b64_pic = Base64.encode64(binary_pic)
+  params["picbox_data"] = "data:image/jpg;base64,#{b64_pic}"
+  
+
+  
+  
   json_doc = params;
   #Store it to Queue
 
@@ -98,7 +105,7 @@ post '/print_image' do
   b64 = params[:b64]
   watermark = params[:watermark]
   qr = params[:qr]
-  decode_base64_content = Base64.decode64(b64.split('base64,').last)
+  decode_base64_content = IO.binread("public/#{b64}.jpg")
 
   # Fetch Willi Logo
   willifile = Tempfile.new(['willi', '.png'])
@@ -128,7 +135,7 @@ post '/print_image' do
     IO.write(qrfile.path, png.to_s)
   end
 
-  img = MiniMagick::Image.open(decode_base64_content)
+  img = MiniMagick::Image.open("public/#{b64}.jpg")
 
   img.resize '1200x'
 

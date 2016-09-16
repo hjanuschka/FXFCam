@@ -128,7 +128,7 @@ post '/print_image' do
     IO.write(qrfile.path, png.to_s)
   end
 
-  img = MiniMagick::Image.read(decode_base64_content)
+  img = MiniMagick::Image.open(decode_base64_content)
 
   img.resize '1200x'
 

@@ -2,5 +2,7 @@
   "iso": 800,
   "aperture": 16,
   "shutterspeed": "1\/160",
-  "focusmode": "Manual"
+  "focusmode": "Manual",
+  "imageformat": "Small Fine JPEG",
+  "imageformatsd": "Small Fine JPEG"
 }

@@ -9,6 +9,7 @@ module FXF
 
     def upload_queue
       puts 'STARTING QUEUE WORKER'
+      return
       loop do
         elements = Dir['QUEUE/WAIT/*']
         elements.each do | job |

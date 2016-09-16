@@ -55,8 +55,7 @@ get '/capture' do
     if ENV['ONLY_PRINT'] != nil
       picdata=File.read("default.jpg");
     else
-      pic = preview.capture
-      picdata=pic.data;
+      picdata = preview.capture
     end
     
     return_message[:status] = 'success'

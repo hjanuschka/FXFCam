@@ -15,7 +15,7 @@ require './lib/fxf/cam.rb'
 require './lib/fxf/queue.rb'
 require './lib/fxf/cleaner.rb'
 
-
+set :threaded, false
 set :port, 8888
 set :bind, '0.0.0.0'
 set :server, :thin
@@ -62,7 +62,7 @@ get '/capture' do
     return_message[:cca_response] = { data: { image: Base64.encode64(picdata) } }
     return_message.to_json
   rescue => error
-    puts error.inspect
+    puts error.backtrace
     # fxfcam.died
     headers('Content-Type' => 'application/json')
     return_message[:status] = 'failed'
@@ -174,7 +174,7 @@ post '/print_image' do
   'DONE'
 end
 get '/preview' do
-  
+  headers 'Access-Control-Allow-Origin' => '*'
   return_message = {}
   begin
     headers('Content-Type' => 'image/jpeg')

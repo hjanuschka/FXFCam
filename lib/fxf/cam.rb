@@ -1,35 +1,42 @@
 module FXF
   class Cam
     attr_accessor :device
+    attr_accessor :preview_config
+    attr_accessor :shot_config
     def initialize
       puts 'FXF Cam init'
       init_cam
     end
+    def set_config(wich)
+      if(wich == "shot") 
+        cfg = self.shot_config
+      else
+        cfg = self.preview_config
+      end
+      device.close unless device.nil?
+      self.device = GPhoto2::Camera.first
+      device.update(cfg)
+      
+      
+    end
     def capture
-        file = File.read('cam-config-shot.json')
-      data_hash = JSON.parse(file)
-      device.close unless device.nil?
-      self.device = GPhoto2::Camera.first
-      puts "found Camera #{device.model} - apply config"
-      device.update(data_hash)
-      puts device["drivemode"].value
-      puts 'Config applied!!'
-#      device.reload
-        
-
-	r = device.capture.data.dup
-        
-
-        file = File.read('cam-config.json')
-      data_hash = JSON.parse(file)
-
-      device.close unless device.nil?
-      self.device = GPhoto2::Camera.first
-      puts "found Camera #{device.model} - apply config"
-      device.update(data_hash)
-      puts device["drivemode"].value
-      puts 'Config applied!!'
-      return r
+      
+      set_config("shot");
+      puts "SHOT SET"
+      cap = device.capture
+      puts "SHOTTED"
+      
+      r = cap.data.dup
+      
+      
+      set_config("preview");
+      puts "PREVIEW SET"
+      puts "PIC LENGTH: #{r.length}" 
+      r
+    
+    end
+    def reopen
+      
     end
     def died
       # init_cam
@@ -40,23 +47,20 @@ module FXF
       # while true  do
 
       `killall -9 PTPCamera` if OS.mac?
-      device.close unless device.nil?
-      self.device = GPhoto2::Camera.first
+      
+      
+      
+      preview_file = File.read('cam-config.json')
+      @preview_config = JSON.parse(preview_file)
 
-      file = File.read('cam-config.json')
-      data_hash = JSON.parse(file)
+      shot_file = File.read('cam-config-shot.json')
+      @shot_config = JSON.parse(shot_file)
 
-      puts "found Camera #{device.model} - apply config"
-      device.update(data_hash)
-      device.save
-      puts device["drivemode"].value
-      puts 'Config applied!!'
-      device.reload
+      set_config("preview");
+      
       data = device.preview.data
-      #device.update(autofocusdrive: true)
-    # do a dummy preview
-
-    #      break
+      
+      
     rescue => error
       puts "Camera cannot be initiated - retry'ing #{error.inspect}"
       sleep 2

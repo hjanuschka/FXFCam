@@ -56,6 +56,7 @@ module FXF
         sleep 0.5
         file = nil
         @mutex.synchronize do
+          
           file = cam.device.preview
           self.preview = file.data
         end

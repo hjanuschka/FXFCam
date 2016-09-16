@@ -17,7 +17,6 @@ module FXF
 #      device.reload
         
 
-        puts device.config.to_json 
 	r = device.capture.data.dup
         
 

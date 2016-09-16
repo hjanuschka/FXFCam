@@ -16,7 +16,6 @@ module FXF
           puts "DOING JOB #{job}"
           file = File.read(job)
           data_hash = JSON.parse(file)
-          puts
           r = RestClient.post('https://api.willi.krone.at/postbox',{:picbox_obj =>  data_hash["picbox_obj"], :picbox_data => data_hash["picbox_data"], :multipart => true});
           resp = JSON.parse(r.body)
           if resp["missionId"]

@@ -1,9 +1,6 @@
 {
-  "iso": 100,
+  "iso": 800,
   "aperture": 16,
   "shutterspeed": "1\/160",
-  "cancelautofocus": true,
-  "manualfocusdrive": "Near 3",
-  "autofocusdrive": false,
   "focusmode": "Manual"
 }

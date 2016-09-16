@@ -2,7 +2,5 @@
   "iso": 3200,
   "aperture": 16,
   "shutterspeed": "1\/30",
-  "autofocusdrive": true
-
-
+  "focusmode": "One Shot"
 }

@@ -42,6 +42,7 @@ module FXF
     def capture
       temp = nil
       @mutex.synchronize do
+        cam.device.reload
         cam.device.update(autofocusdrive: true)
         temp = cam.device.capture
       end

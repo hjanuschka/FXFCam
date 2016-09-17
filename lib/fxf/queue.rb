@@ -10,9 +10,10 @@ module FXF
     def upload_queue
       puts 'STARTING QUEUE WORKER'
       loop do
+        puts "QUEUE RUN"
         elements = Dir['QUEUE/WAIT/*']
         elements.each do | job |
-          begin
+          
           puts "DOING JOB #{job}"
           file = File.read(job)
           data_hash = JSON.parse(file)
@@ -22,15 +23,9 @@ module FXF
             FileUtils.mv(job, "QUEUE/DONE")
             puts "DONE UPLOAD"
           end
-          
-        rescue => ex
-          puts ex.inspect
           sleep 1
         end
-        
         sleep 20
-        end
-        
       end
     end
   end

@@ -53,7 +53,7 @@ get '/capture' do
     headers('Content-Type' => 'application/json')
 
     if ENV['ONLY_PRINT'] != nil
-      picdata="default.jpg"
+      picdata="default"
     else
       picdata = preview.capture
     end

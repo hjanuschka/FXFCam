@@ -54,6 +54,7 @@ get '/capture' do
 
     if ENV['ONLY_PRINT'] != nil
       picdata="default"
+      sleep 5
     else
       picdata = preview.capture
     end

@@ -3,6 +3,7 @@
   "aperture": 16,
   "shutterspeed": "1\/160",
   "focusmode": "Manual",
-  
-  "picturestyle": "Portrait"
+  "picturestyle": "Portrait",
+  "reviewtime": "2 seconds",
+  "whitebalance": "Flash"
 }

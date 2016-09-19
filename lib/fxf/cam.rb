@@ -58,7 +58,14 @@ module FXF
 
       `killall -9 PTPCamera` if OS.mac?
       
-      
+      camera = GPhoto2::Camera.first
+      camera.exit
+      port = GPhoto2::Port.new
+      port.info = camera.port_info
+      port.open
+      port.reset
+      port.close
+      camera.close
       
       preview_file = File.read('cam-config.json')
       @preview_config = JSON.parse(preview_file)

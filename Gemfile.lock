@@ -1,3 +1,11 @@
+GIT
+  remote: https://github.com/zaeleus/ffi-gphoto2
+  revision: e82dc03de6a85a6af6ea618e6ee6e30dbce5aa2a
+  ref: master
+  specs:
+    ffi-gphoto2 (0.6.1)
+      ffi (~> 1.9.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -9,8 +17,6 @@ GEM
       unf (>= 0.0.5, < 1.0.0)
     eventmachine (1.2.0.1)
     ffi (1.9.14)
-    ffi-gphoto2 (0.6.1)
-      ffi (~> 1.9.0)
     get_process_mem (0.2.1)
     http-cookie (1.0.2)
       domain_name (~> 0.5)
@@ -49,7 +55,7 @@ PLATFORMS
 
 DEPENDENCIES
   cupsffi
-  ffi-gphoto2
+  ffi-gphoto2!
   get_process_mem
   json (= 2.0.2)
   mini_magick

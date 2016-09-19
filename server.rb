@@ -20,6 +20,7 @@ set :port, 8888
 set :bind, '0.0.0.0'
 set :server, :thin
 disable :logging
+set :protection, :except => :json_csrf
 
 preview = FXF::Controller.new if ENV['ONLY_PRINT'].nil?
 queue_worker = FXF::Queue.new

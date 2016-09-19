@@ -16,22 +16,33 @@ module FXF
       device.close unless device.nil?
       self.device = GPhoto2::Camera.first
       device.update(cfg)
+      sleep 0.5
       
       
     end
     def capture
       
-      set_config("shot");
+
       puts "SHOT SET"
-      cap = device.capture
+      set_config("shot");
+      #puts "SHOT"
+
+
+      device.trigger
+      puts "triggered"
+      cap = device.wait_for(:file_added)
+      puts "waited"
       puts "SHOTTED"
-      
-      r = cap.data.dup
+
       random_key=(0...12).map { (65 + rand(26)).chr }.join
-      IO.binwrite("public/#{random_key}.jpg", r);
+      cap.data.save "public/#{random_key}.jpg"
+
+       #cap = device.capture
+       #cap.data.save "public/#{random_key}.jpg"
+
+
       set_config("preview");
       puts "PREVIEW SET"
-      puts "PIC LENGTH: #{r.length}" 
       random_key
     end
     def reopen

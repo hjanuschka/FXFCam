@@ -44,7 +44,6 @@ module FXF
       @mutex.synchronize do
         temp = cam.capture
       end
-      sleep 3
 
       temp
     end

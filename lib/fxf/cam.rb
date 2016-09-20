@@ -64,7 +64,7 @@ module FXF
       port.info = camera.port_info
       port.open
       port.reset
-      port.close
+      #port.close
       camera.close
       
       preview_file = File.read('cam-config.json')

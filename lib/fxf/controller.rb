@@ -64,9 +64,9 @@ module FXF
         break if shutdown
       end
     rescue => error
-      puts error.backtrace
-      puts "HARD ERROR #{error.inspect}"
-      Process.kill('KILL', Process.pid)
+      sleep 2
+      self.cam = FXF::Cam.new
+      update_preview
     end
     end
 end

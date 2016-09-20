@@ -79,11 +79,10 @@ module FXF
       
       
     rescue => error
-      puts "Camera cannot be initiated - retry'ing #{error.inspect}"
       sleep 2
-      exit
-
-      # end
+      puts "ERR #{error.backtrace}"
+      puts error.inspect
+      init_cam
     end
   end
 end

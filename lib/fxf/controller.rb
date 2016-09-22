@@ -38,7 +38,11 @@ module FXF
     def end_it
       shutdown = true
     end
-
+    def focus
+      @mutex.synchronize do
+        temp = cam.focus
+      end
+    end
     def capture
       temp = nil
       @mutex.synchronize do

@@ -103,7 +103,7 @@ get '/focus' do
   headers 'Access-Control-Allow-Origin' => '*'
   content_type :json
   return_message = {}
-  preview.cam.focus
+  preview.focus
   return_message["focus"]=true
 end
 post '/print_image' do

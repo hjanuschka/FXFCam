@@ -77,8 +77,8 @@ module FXF
       port.info = camera.port_info
       port.open
       port.reset
-      port.close
-      camera.close
+      #port.close
+      #camera.close
 
 
       set_config('preview')

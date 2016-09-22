@@ -20,7 +20,7 @@ set :port, 8888
 set :bind, '0.0.0.0'
 set :server, :thin
 disable :logging
-set :protection, :except => :json_csrf
+set :protection, except: :json_csrf
 
 preview = FXF::Controller.new if ENV['ONLY_PRINT'].nil?
 queue_worker = FXF::Queue.new
@@ -53,13 +53,13 @@ get '/capture' do
   begin
     headers('Content-Type' => 'application/json')
 
-    if ENV['ONLY_PRINT'] != nil
-      picdata="default"
+    if !ENV['ONLY_PRINT'].nil?
+      picdata = 'default'
       sleep 5
     else
       picdata = preview.capture
     end
-    
+
     return_message[:status] = 'success'
     return_message[:cca_response] = { data: { image: picdata } }
     return_message.to_json
@@ -83,24 +83,28 @@ get '/config' do
 end
 post '/postbox' do
   headers 'Access-Control-Allow-Origin' => '*'
-  binary_pic = IO.binread("public/#{params[:picbox_data]}.jpg");
+  binary_pic = IO.binread("public/#{params[:picbox_data]}.jpg")
   b64_pic = Base64.encode64(binary_pic)
-  params["picbox_data"] = "data:image/jpg;base64,#{b64_pic}"
-  
+  params['picbox_data'] = "data:image/jpg;base64,#{b64_pic}"
 
-  
-  
-  json_doc = params;
-  #Store it to Queue
+  json_doc = params
+  # Store it to Queue
 
-  file = Tempfile.new(["queue", ".json"])
+  file = Tempfile.new(['queue', '.json'])
   file << json_doc.to_json
   file.flush
-  FileUtils.mv(file.path, "QUEUE/WAIT/")
+  FileUtils.mv(file.path, 'QUEUE/WAIT/')
   file.close
-  
+
   headers('Content-Type' => 'application/json')
-  return {"asdasd" => 123}.to_json
+  return { 'asdasd' => 123 }.to_json
+end
+get '/focus' do
+  headers 'Access-Control-Allow-Origin' => '*'
+  content_type :json
+  return_message = {}
+  preview.cam.focus
+  return_message["focus"]=true
 end
 post '/print_image' do
   headers 'Access-Control-Allow-Origin' => '*'
@@ -187,14 +191,12 @@ get '/preview' do
   return_message = {}
   begin
     headers('Content-Type' => 'image/jpeg')
-    if ENV['ONLY_PRINT'] != nil
-      File.read("default.jpg")
+    if !ENV['ONLY_PRINT'].nil?
+      File.read('default.jpg')
     else
-    preview.preview
+      preview.preview
     end
-    
-    
-    
+
   rescue => error
     # fxfcam.died
     headers('Content-Type' => 'application/json')

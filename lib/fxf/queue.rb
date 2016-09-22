@@ -1,6 +1,8 @@
 module FXF
   class Queue
-    def initialize
+    attr_accessor :config
+    def initialize(config = {})
+      @config = config
       thread = []
       thread << Thread.new do
         upload_queue
@@ -23,9 +25,9 @@ module FXF
             FileUtils.mv(job, "QUEUE/DONE")
             puts "DONE UPLOAD"
           end
-          sleep 1
+          sleep @config["queue"]["per_item_pause"]
         end
-        sleep 20
+        sleep sleep @config["queue"]["per_run_pause"]
       end
     end
   end

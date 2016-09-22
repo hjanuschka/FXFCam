@@ -1,43 +1,46 @@
 module FXF
   class Cam
     attr_accessor :device
-    attr_accessor :preview_config
-    attr_accessor :shot_config
-    def initialize
+    attr_accessor :config
+    def initialize(config = {})
+      @config = config
       puts 'FXF Cam init'
       init_cam
     end
 
     def set_config(wich)
+      
       cfg = if wich == 'shot'
-              shot_config
+              @config["shot"]
             else
-              preview_config
+              @config["preview"]
             end
       device.close unless device.nil?
       self.device = GPhoto2::Camera.first
       device.update(cfg)
-      sleep 0.5
+      #sleep 0.5
+      sleep @config["settings_updated"]
     end
 
     def focus
+      set_config("preview")
+      #device.update(eosremoterelease: @config["focus_press"])
       device.update(autofocusdrive: true)
-    rescue GPhoto2::Error
-      puts 'autofocus failed... retrying'
-      device.reload
-      retry
-    ensure
-      device.update(autofocusdrive: false)
+      sleep @config["focus_max_time"]
+      puts "Focus updated"
+      set_config('preview')
     end
 
     def capture
       puts 'SHOT SET'
+      startTime = Time.now
       set_config('shot')
       # puts "SHOT"
 
       device.trigger
       puts 'triggered'
       cap = device.wait_for(:file_added)
+      endTime = Time.now
       puts 'waited'
       puts 'SHOTTED'
 
@@ -49,9 +52,12 @@ module FXF
 
       set_config('preview')
       puts 'PREVIEW SET'
-      random_key
+      {"image" => random_key, "duration" => ((endTime-startTime)).round(1)}
     end
-
+    def exit_cam
+      puts "CAM EXIT"
+      device.close unless device.nil?
+    end
     def reopen
     end
 
@@ -71,14 +77,9 @@ module FXF
       port.info = camera.port_info
       port.open
       port.reset
-      # port.close
+      port.close
       camera.close
 
-      preview_file = File.read('cam-config.json')
-      @preview_config = JSON.parse(preview_file)
-
-      shot_file = File.read('cam-config-shot.json')
-      @shot_config = JSON.parse(shot_file)
 
       set_config('preview')
 
@@ -86,7 +87,8 @@ module FXF
 
     rescue => error
       puts "Camera cannot be initiated - retry'ing #{error.inspect}"
-      sleep 2
+      puts error.backtrace
+      sleep @config["usb_retry"]
       exit
 
       # end

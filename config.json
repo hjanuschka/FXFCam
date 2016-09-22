@@ -1,0 +1,30 @@
+{
+  "preview": {
+    "iso": 3200,
+    "aperture": 16,
+    "shutterspeed": "1\/30",
+    "focusmode": "AI Servo",
+    "picturestyle": "Portrait",
+    "reviewtime": "2 seconds",
+    "whitebalance": "Flash"
+  },
+  "shot": {
+    "iso": 800,
+    "aperture": 16,
+    "shutterspeed": "1\/160",
+    "focusmode": "Manual",
+    "picturestyle": "Portrait",
+    "reviewtime": "2 seconds",
+    "whitebalance": "Flash"
+  },
+  "usb_retry": 5.0,
+  "queue": {
+      "per_run_pause": 20.0,
+      "per_item_pause": 1.0
+  },
+  "focus_press": "Press 1",
+  "settings_updated": 0.0,
+  "focus_max_time": 2.0,
+  "preview_interval": 0.5
+
+}

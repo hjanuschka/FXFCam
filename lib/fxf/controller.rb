@@ -8,13 +8,17 @@ module FXF
     attr_accessor :preview
     attr_accessor :shutdown
     attr_accessor :cleaner
-    def initialize
+    attr_accessor :thread
+    attr_accessor :config
+    
+    def initialize(config = {})
+      @config = config
       self.mutex = Mutex.new
-      self.cam = FXF::Cam.new
+      self.cam = FXF::Cam.new(config)
       self.preview = nil
       self.shutdown = false
-      thread = []
-      thread << Thread.new do
+      self.thread = []
+      self.thread << Thread.new do
         puts 'Update Thread initiated!!! Fetching Previews'
         update_preview
       end
@@ -34,32 +38,39 @@ module FXF
       @cleaner.cleanup
       puts 'Cleanup run started'
     end
-
+    def exit_cam
+      @mutex.synchronize do
+        cam.exit_cam
+      end
+      
+    end
     def end_it
       shutdown = true
     end
     def focus
       @mutex.synchronize do
+        
         temp = cam.focus
+        
       end
     end
     def capture
+      
       temp = nil
       @mutex.synchronize do
         temp = cam.capture
       end
 
-      temp
+      {"image" => temp["image"], "duration" =>temp["duration"]}
     end
 
     def update_preview
       mem = GetProcessMem.new
 
       loop do
-        sleep 0.5
+        sleep @config["preview_interval"]
         file = nil
         @mutex.synchronize do
-          
           file = cam.device.preview
           self.preview = file.data
         end

@@ -1,5 +1,4 @@
 require 'gphoto2'
-require 'sinatra'
 require 'json'
 require 'os'
 require 'base64'
@@ -15,6 +14,19 @@ require './lib/fxf/cam.rb'
 require './lib/fxf/queue.rb'
 require './lib/fxf/cleaner.rb'
 
+config_file = File.read('config.json')
+config = JSON.parse(config_file)
+
+preview = FXF::Controller.new(config) if ENV['ONLY_PRINT'].nil?
+queue_worker = FXF::Queue.new
+
+at_exit do
+  preview.exit_cam
+end
+
+
+require 'sinatra'
+
 set :threaded, false
 set :port, 8888
 set :bind, '0.0.0.0'
@@ -22,8 +34,6 @@ set :server, :thin
 disable :logging
 set :protection, except: :json_csrf
 
-preview = FXF::Controller.new if ENV['ONLY_PRINT'].nil?
-queue_worker = FXF::Queue.new
 
 get '/liveview' do
   boundary = 'some_shit'
@@ -40,7 +50,7 @@ get '/liveview' do
       out << content
       out << "--#{boundary}"
 
-      sleep 0.5
+      sleep @config["preview_interval"]
     end
   end
 end
@@ -54,14 +64,14 @@ get '/capture' do
     headers('Content-Type' => 'application/json')
 
     if !ENV['ONLY_PRINT'].nil?
-      picdata = 'default'
+      picdata = {"image" => 'default', "duration" => 5}
       sleep 5
     else
       picdata = preview.capture
     end
-
+    
     return_message[:status] = 'success'
-    return_message[:cca_response] = { data: { image: picdata } }
+    return_message[:cca_response] = { data: { image: picdata["image"], duration: picdata["duration"] } }
     return_message.to_json
   rescue => error
     puts error.backtrace
@@ -101,10 +111,16 @@ post '/postbox' do
 end
 get '/focus' do
   headers 'Access-Control-Allow-Origin' => '*'
-  content_type :json
-  return_message = {}
   preview.focus
-  return_message["focus"]=true
+  #sleep 1
+  headers('Content-Type' => 'image/jpeg')
+  if !ENV['ONLY_PRINT'].nil?
+    File.read('default.jpg')
+  else
+    preview.preview
+  end
+  
+  
 end
 post '/print_image' do
   headers 'Access-Control-Allow-Origin' => '*'

@@ -1,0 +1,35 @@
+<script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+
+Editing mode:
+<b><%=@mode%>
+</b>
+(<a href="/edit_config?mode=preview">PREVIEW</A>,
+<a href="/edit_config?mode=shot">SHOT</A>)
+<form id=fm1 action="/set_config" method="POST">
+  <input type="hidden" name="type" value="<%=@mode%>">
+  <% @current.each do |e| %>
+  <hr>
+  <%=e.first%>
+  (=<%= @config[@mode][e.first] %>)
+  <select name="<%=e.first%>">
+    <% e[1]["avail"].each do |n| %>
+    <option value="<%=n%>" <% if n.to_s == @config[@mode][e.first].to_s %> selected <% end %>><%=n%></option>
+    <% end %>
+  </select>
+  <hr>
+  <% end %>
+
+  <input type=submit value="SAVE">
+  <input type="button" id="prev" value="Test-Capture (without save)">
+  <div id="preview_capture"></div>
+</form>
+
+<script>
+  $(document).ready(function () {
+    $("#prev").click(function () {
+      $.post("/capture", $('#fm1').serialize(), function (d) {
+        $("#preview_capture").html("<b>Preview:</b><br><img src='/" + d.cca_response.data.image + ".jpg' style='max-width:1200px'>")
+      });
+    });
+  });
+</script>

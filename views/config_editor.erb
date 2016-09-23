@@ -21,11 +21,17 @@ Editing mode:
 
   <input type=submit value="SAVE">
   <input type="button" id="prev" value="Test-Capture (without save)">
+  <input type="button" id="foc" value="Run Auto Focus">
   <div id="preview_capture"></div>
 </form>
 
 <script>
   $(document).ready(function () {
+    $("#foc").click(function() {
+      $.get("/focus", function (d) {
+          $("#prev").click();
+      });
+    });
     $("#prev").click(function () {
       $.post("/capture", $('#fm1').serialize(), function (d) {
         $("#preview_capture").html("<b>Preview:</b><br><img src='/" + d.cca_response.data.image + ".jpg' style='max-width:1200px'>")

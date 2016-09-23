@@ -14,15 +14,19 @@ require './lib/fxf/controller.rb'
 require './lib/fxf/cam.rb'
 require './lib/fxf/queue.rb'
 require './lib/fxf/cleaner.rb'
+require './lib/fxf/camconfig.rb'
 
 config_file = File.read('config.json')
 config = JSON.parse(config_file)
 
-preview = FXF::Controller.new(config) if ENV['ONLY_PRINT'].nil?
+controller = FXF::Controller.new(config) if ENV['ONLY_PRINT'].nil?
+
 queue_worker = FXF::Queue.new
 
+
+
 at_exit do
-  preview.exit_cam
+  controller.exit_cam
 end
 
 
@@ -45,7 +49,7 @@ get '/liveview' do
 
   stream(:keep_open) do |out|
     loop do
-      content = preview.preview
+      content = controller.preview
 
       out << "Content-type: image/jpeg\n\n"
       out << content
@@ -57,6 +61,33 @@ get '/liveview' do
 end
 
 # REST INTERFACE
+post '/capture' do
+  #Captures with received config
+  headers 'Access-Control-Allow-Origin' => '*'
+  content_type :json
+  return_message = {}
+  config_to_test = {}
+  update_type = "preview"
+  
+  params.keys.each do | e  |
+    if e == "type"
+      update_type=params[e]
+      next
+    end
+    config_to_test[e]=params[e];
+  end
+  
+  if !ENV['ONLY_PRINT'].nil?
+    picdata = {"image" => 'default', "duration" => 5}
+    sleep 5
+  else
+    picdata = controller.capture(config_to_test)
+  end
+  
+  return_message[:status] = 'success'
+  return_message[:cca_response] = { data: { image: picdata["image"], duration: picdata["duration"] } }
+  return_message.to_json
+end
 get '/capture' do
   headers 'Access-Control-Allow-Origin' => '*'
   content_type :json
@@ -68,7 +99,7 @@ get '/capture' do
       picdata = {"image" => 'default', "duration" => 5}
       sleep 5
     else
-      picdata = preview.capture
+      picdata = controller.capture
     end
     
     return_message[:status] = 'success'
@@ -90,7 +121,7 @@ get '/capture' do
   end
 end
 get '/config' do
-  preview.cam.device.config.to_json
+  controller.cam.device.config.to_json
 end
 post '/postbox' do
   headers 'Access-Control-Allow-Origin' => '*'
@@ -110,15 +141,53 @@ post '/postbox' do
   headers('Content-Type' => 'application/json')
   return { 'asdasd' => 123 }.to_json
 end
+get '/edit_config' do
+  if params["mode"] == nil
+    params["mode"]="preview"
+  end
+  #tmp = controller.get_current_config
+  options_to_find = {
+          "iso" => {"current" => 400, "avail"=>[200,800,300]},
+          "shutterspeed" =>  {"current" => 400, "avail"=>["asdf","1/160","ASdaf1"]}
+          
+  }; 
+  @current = options_to_find
+  @current = controller.get_current_config
+  @config = config
+  @mode = params["mode"]
+  erb :config_editor
+end
+
+post '/set_config' do
+  config_to_store = {}
+  update_type = "preview"
+  
+  params.keys.each do | e  |
+    if e == "type"
+      update_type=params[e]
+      next
+    end
+    config_to_store[e]=params[e];
+  end
+  
+  
+  
+  config[update_type]=config_to_store;
+  pretty_config = JSON.pretty_generate(config);
+  File.write("config.json", pretty_config)
+  return pretty_config
+  
+end
+
 get '/focus' do
   headers 'Access-Control-Allow-Origin' => '*'
-  preview.focus
+  controller.focus
   #sleep 1
   headers('Content-Type' => 'image/jpeg')
   if !ENV['ONLY_PRINT'].nil?
     File.read('default.jpg')
   else
-    preview.preview
+    controller.preview
   end
   
   
@@ -211,7 +280,7 @@ get '/preview' do
     if !ENV['ONLY_PRINT'].nil?
       File.read('default.jpg')
     else
-      preview.preview
+      controller.preview
     end
 
   rescue => error

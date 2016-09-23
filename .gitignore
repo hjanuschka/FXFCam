@@ -1,3 +1,4 @@
 QUEUE/*/queue*
 public/
 !public/default.jpg
+config.json

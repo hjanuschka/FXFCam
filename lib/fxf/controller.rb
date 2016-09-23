@@ -47,6 +47,15 @@ module FXF
     def end_it
       shutdown = true
     end
+    def get_current_config
+      temp = {}
+      @mutex.synchronize do
+        
+        temp = cam.get_current_config
+        
+      end
+      return temp
+    end
     def focus
       @mutex.synchronize do
         
@@ -54,11 +63,11 @@ module FXF
         
       end
     end
-    def capture
+    def capture(capconf = nil)
       
       temp = nil
       @mutex.synchronize do
-        temp = cam.capture
+        temp = cam.capture(capconf)
       end
 
       {"image" => temp["image"], "duration" =>temp["duration"]}

@@ -8,6 +8,7 @@ require 'rqrcode'
 require 'cupsffi'
 require 'fileutils'
 require 'rest-client'
+require 'sinatra/directory_listing'
 
 require './lib/fxf/controller.rb'
 require './lib/fxf/cam.rb'
@@ -227,5 +228,17 @@ get '/preview' do
       Process.kill('KILL', Process.pid)
     end
     return_message.to_json
+  end
+end
+
+get '*' do |path|
+  if File.exist?(File.join(settings.public_folder, path))
+    if File.directory?(File.join(settings.public_folder, path))
+      list()
+    else
+      send_file File.join(settings.public_folder, path)
+    end
+  else
+    "Not Found"
   end
 end

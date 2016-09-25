@@ -13,7 +13,12 @@ module FXF
               "focusmode" => {},
               "picturestyle" => {},
               "reviewtime" => {},
-              "whitebalance" => {}
+              "whitebalance" => {},
+              "imageformat" => {},
+              "capturetarget" => {},
+              "colorspace" => {},
+              "meteringmode" => {},
+              
       }; 
 
 

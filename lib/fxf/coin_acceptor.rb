@@ -11,7 +11,9 @@ module FXF
       self.credits = 0
       self.thread = []
       self.thread << Thread.new do
-        handle_coins
+        if !@config["has_coin_acceptor"]["development"]
+          handle_coins
+        end
       end
       
     end

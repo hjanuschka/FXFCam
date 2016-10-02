@@ -11,6 +11,7 @@ module FXF
     attr_accessor :thread
     attr_accessor :config
     
+    
     def initialize(config = {})
       @config = config
       self.mutex = Mutex.new

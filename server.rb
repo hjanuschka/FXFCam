@@ -15,14 +15,20 @@ require './lib/fxf/cam.rb'
 require './lib/fxf/queue.rb'
 require './lib/fxf/cleaner.rb'
 require './lib/fxf/camconfig.rb'
+require './lib/fxf/coin_acceptor.rb'
 
 config_file = File.read('config.json')
 config = JSON.parse(config_file)
 
-controller = FXF::Controller.new(config) if ENV['ONLY_PRINT'].nil?
+controller = FXF::Controller.new(config) if config["has_cam"]
 
 queue_worker = FXF::Queue.new
 
+
+coin_acceptor = nil
+if config["has_coin_acceptor"]
+  coin_acceptor = FXF::CoinAcceptor.new(config)
+end
 
 
 at_exit do
@@ -39,6 +45,27 @@ set :server, :thin
 disable :logging
 set :protection, except: :json_csrf
 
+
+get '/coins/remove' do
+  headers 'Access-Control-Allow-Origin' => '*'
+  content_type :json
+  if coin_acceptor.get_credit > 0
+    coin_acceptor.remove_credit(params[:amount].to_i)
+  end
+  return {"credit" => coin_acceptor.get_credit}.to_json
+end
+get '/coins/add' do
+  headers 'Access-Control-Allow-Origin' => '*'
+  content_type :json
+  coin_acceptor.add_credit(params[:amount].to_i)
+  
+  return {"credit" => coin_acceptor.get_credit}.to_json
+end
+get '/coins/current' do
+  headers 'Access-Control-Allow-Origin' => '*'
+  content_type :json
+  return {"credit" => coin_acceptor.get_credit}.to_json
+end
 
 get '/liveview' do
   boundary = 'some_shit'
@@ -77,7 +104,7 @@ post '/capture' do
     config_to_test[e]=params[e];
   end
   
-  if !ENV['ONLY_PRINT'].nil?
+  if !config["has_cam"]
     picdata = {"image" => 'default', "duration" => 5}
     sleep 5
   else
@@ -95,7 +122,7 @@ get '/capture' do
   begin
     headers('Content-Type' => 'application/json')
 
-    if !ENV['ONLY_PRINT'].nil?
+    if !config["has_cam"]
       picdata = {"image" => 'default', "duration" => 5}
       sleep 5
     else
@@ -184,7 +211,7 @@ get '/focus' do
   controller.focus
   #sleep 1
   headers('Content-Type' => 'image/jpeg')
-  if !ENV['ONLY_PRINT'].nil?
+  if !config["has_cam"]
     File.read('default.jpg')
   else
     controller.preview
@@ -277,7 +304,7 @@ get '/preview' do
   return_message = {}
   begin
     headers('Content-Type' => 'image/jpeg')
-    if !ENV['ONLY_PRINT'].nil?
+    if !config["has_cam"]
       File.read('default.jpg')
     else
       controller.preview

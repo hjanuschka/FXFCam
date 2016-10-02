@@ -25,6 +25,11 @@
   "focus_press": "Press 1",
   "settings_updated": 0.2,
   "focus_max_time": 2.0,
-  "preview_interval": 0.5
+  "preview_interval": 0.5,
+  "has_cam": true,
+  "XXXhas_coin_acceptor": {
+      "device": "/dev/cu.SLAB_USBtoUART",
+      "cent_per_signal": 10
+  }
 
 }

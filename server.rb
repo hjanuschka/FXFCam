@@ -220,10 +220,18 @@ get '/focus' do
   
 end
 post '/print_image' do
+  content_type :json
   headers 'Access-Control-Allow-Origin' => '*'
   b64 = params[:b64]
   watermark = params[:watermark]
   qr = params[:qr]
+  
+  if !config["has_printer"]
+    
+    return {"no_printer"=> 1}.to_json
+  end
+  
+  
   decode_base64_content = IO.binread("public/#{b64}.jpg")
 
   # Fetch Willi Logo
@@ -237,7 +245,6 @@ post '/print_image' do
     download = open(watermark)
     IO.copy_stream(download, watermarkfile.path)
   end
-
   unless qr.nil?
     qrfile = Tempfile.new(['qr', '.png'])
     # generate QR
@@ -297,7 +304,8 @@ post '/print_image' do
   File.unlink(qrfile.path) unless qr.nil?
   File.unlink(watermarkfile.path) unless watermark.nil?
   File.unlink(willifile.path)
-  'DONE'
+  {"a"=>'DONE'}.to_json
+
 end
 get '/preview' do
   headers 'Access-Control-Allow-Origin' => '*'

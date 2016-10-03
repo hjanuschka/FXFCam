@@ -27,6 +27,7 @@
   "focus_max_time": 2.0,
   "preview_interval": 0.5,
   "has_cam": true,
+  "has_printer": true,
   "has_coin_acceptor": {
       "device": "/dev/cu.SLAB_USBtoUART",
       "cent_per_signal": 10,

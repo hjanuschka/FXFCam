@@ -17,6 +17,9 @@ require './lib/fxf/cleaner.rb'
 require './lib/fxf/camconfig.rb'
 require './lib/fxf/coin_acceptor.rb'
 
+STDOUT.sync = true
+STDERR.sync = true
+
 config_file = File.read('config.json')
 config = JSON.parse(config_file)
 

@@ -21,6 +21,7 @@ module FXF
           data_hash = JSON.parse(file)
           r = RestClient.post('https://api.willi.krone.at/postbox',{:picbox_obj =>  data_hash["picbox_obj"], :picbox_data => data_hash["picbox_data"], :multipart => true});
           resp = JSON.parse(r.body)
+	  puts resp.inspect
           if resp["missionId"]
             FileUtils.mv(job, "QUEUE/DONE")
             puts "DONE UPLOAD"

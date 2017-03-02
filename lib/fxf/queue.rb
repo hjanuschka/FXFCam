@@ -28,7 +28,7 @@ module FXF
           end
           sleep @config["queue"]["per_item_pause"]
         end
-        sleep sleep @config["queue"]["per_run_pause"]
+        sleep @config["queue"]["per_run_pause"]
       end
     end
   end

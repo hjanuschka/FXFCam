@@ -1,14 +1,21 @@
 module FXF
   class Queue
+    attr_accessor :thread
     attr_accessor :config
+    attr_accessor :mutex
     def initialize(config = {})
       @config = config
-      thread = []
-      thread << Thread.new do
-        upload_queue
+      @mutex = Mutex.new
+      launch_thread
+    end
+    def launch_thread
+      @thread = []
+      @thread << Thread.new do
+	@mutex.synchronize do
+          upload_queue
+       end
       end
     end
-
     def upload_queue
       puts 'STARTING QUEUE WORKER'
       loop do
@@ -30,6 +37,10 @@ module FXF
         end
         sleep @config["queue"]["per_run_pause"]
       end
+    rescue => ex
+	puts "RESCUED: #{ex.inspect}"
+	puts @config.inspect
+	puts ex.backtrace
     end
   end
 end

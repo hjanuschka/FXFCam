@@ -23,21 +23,16 @@ STDERR.sync = true
 config_file = File.read('config.json')
 config = JSON.parse(config_file)
 
-controller = FXF::Controller.new(config) if config["has_cam"]
+controller = FXF::Controller.new(config) if config['has_cam']
 
-queue_worker = FXF::Queue.new
-
+queue_worker = FXF::Queue.new(config)
 
 coin_acceptor = nil
-if config["has_coin_acceptor"]
-  coin_acceptor = FXF::CoinAcceptor.new(config)
-end
-
+coin_acceptor = FXF::CoinAcceptor.new(config) if config['has_coin_acceptor']
 
 at_exit do
   controller.exit_cam
 end
-
 
 require 'sinatra'
 
@@ -48,26 +43,25 @@ set :server, :thin
 disable :logging
 set :protection, except: :json_csrf
 
-
 get '/coins/remove' do
   headers 'Access-Control-Allow-Origin' => '*'
   content_type :json
   if coin_acceptor.get_credit > 0
     coin_acceptor.remove_credit(params[:amount].to_i)
   end
-  return {"credit" => coin_acceptor.get_credit}.to_json
+  return { 'credit' => coin_acceptor.get_credit }.to_json
 end
 get '/coins/add' do
   headers 'Access-Control-Allow-Origin' => '*'
   content_type :json
   coin_acceptor.add_credit(params[:amount].to_i)
-  
-  return {"credit" => coin_acceptor.get_credit}.to_json
+
+  return { 'credit' => coin_acceptor.get_credit }.to_json
 end
 get '/coins/current' do
   headers 'Access-Control-Allow-Origin' => '*'
   content_type :json
-  return {"credit" => coin_acceptor.get_credit}.to_json
+  return { 'credit' => coin_acceptor.get_credit }.to_json
 end
 
 get '/liveview' do
@@ -85,37 +79,37 @@ get '/liveview' do
       out << content
       out << "--#{boundary}"
 
-      sleep @config["preview_interval"]
+      sleep @config['preview_interval']
     end
   end
 end
 
 # REST INTERFACE
 post '/capture' do
-  #Captures with received config
+  # Captures with received config
   headers 'Access-Control-Allow-Origin' => '*'
   content_type :json
   return_message = {}
   config_to_test = {}
-  update_type = "preview"
-  
-  params.keys.each do | e  |
-    if e == "type"
-      update_type=params[e]
+  update_type = 'preview'
+
+  params.keys.each do |e|
+    if e == 'type'
+      update_type = params[e]
       next
     end
-    config_to_test[e]=params[e];
+    config_to_test[e] = params[e]
   end
-  
-  if !config["has_cam"]
-    picdata = {"image" => 'default', "duration" => 5}
+
+  if !config['has_cam']
+    picdata = { 'image' => 'default', 'duration' => 5 }
     sleep 5
   else
     picdata = controller.capture(config_to_test)
   end
-  
+
   return_message[:status] = 'success'
-  return_message[:cca_response] = { data: { image: picdata["image"], duration: picdata["duration"] } }
+  return_message[:cca_response] = { data: { image: picdata['image'], duration: picdata['duration'] } }
   return_message.to_json
 end
 get '/capture' do
@@ -125,15 +119,15 @@ get '/capture' do
   begin
     headers('Content-Type' => 'application/json')
 
-    if !config["has_cam"]
-      picdata = {"image" => 'default', "duration" => 5}
+    if !config['has_cam']
+      picdata = { 'image' => 'default', 'duration' => 5 }
       sleep 5
     else
       picdata = controller.capture
     end
-    
+
     return_message[:status] = 'success'
-    return_message[:cca_response] = { data: { image: picdata["image"], duration: picdata["duration"] } }
+    return_message[:cca_response] = { data: { image: picdata['image'], duration: picdata['duration'] } }
     return_message.to_json
   rescue => error
     puts error.backtrace
@@ -172,55 +166,48 @@ post '/postbox' do
   return { 'asdasd' => 123 }.to_json
 end
 get '/edit_config' do
-  if params["mode"] == nil
-    params["mode"]="preview"
-  end
-  #tmp = controller.get_current_config
+  params['mode'] = 'preview' if params['mode'].nil?
+  # tmp = controller.get_current_config
   options_to_find = {
-          "iso" => {"current" => 400, "avail"=>[200,800,300]},
-          "shutterspeed" =>  {"current" => 400, "avail"=>["asdf","1/160","ASdaf1"]}
-          
-  }; 
+    'iso' => { 'current' => 400, 'avail' => [200, 800, 300] },
+    'shutterspeed' => { 'current' => 400, 'avail' => ['asdf', '1/160', 'ASdaf1'] }
+
+  }
   @current = options_to_find
   @current = controller.get_current_config
   @config = config
-  @mode = params["mode"]
+  @mode = params['mode']
   erb :config_editor
 end
 
 post '/set_config' do
   config_to_store = {}
-  update_type = "preview"
-  
-  params.keys.each do | e  |
-    if e == "type"
-      update_type=params[e]
+  update_type = 'preview'
+
+  params.keys.each do |e|
+    if e == 'type'
+      update_type = params[e]
       next
     end
-    config_to_store[e]=params[e];
+    config_to_store[e] = params[e]
   end
-  
-  
-  
-  config[update_type]=config_to_store;
-  pretty_config = JSON.pretty_generate(config);
-  File.write("config.json", pretty_config)
+
+  config[update_type] = config_to_store
+  pretty_config = JSON.pretty_generate(config)
+  File.write('config.json', pretty_config)
   return pretty_config
-  
 end
 
 get '/focus' do
   headers 'Access-Control-Allow-Origin' => '*'
   controller.focus
-  #sleep 1
+  # sleep 1
   headers('Content-Type' => 'image/jpeg')
-  if !config["has_cam"]
+  if !config['has_cam']
     File.read('default.jpg')
   else
     controller.preview
   end
-  
-  
 end
 post '/print_image' do
   content_type :json
@@ -228,13 +215,9 @@ post '/print_image' do
   b64 = params[:b64]
   watermark = params[:watermark]
   qr = params[:qr]
-  
-  if !config["has_printer"]
-    
-    return {"no_printer"=> 1}.to_json
-  end
-  
-  
+
+  return { 'no_printer' => 1 }.to_json unless config['has_printer']
+
   decode_base64_content = IO.binread("public/#{b64}.jpg")
 
   # Fetch Willi Logo
@@ -244,9 +227,9 @@ post '/print_image' do
 
   unless watermark.nil?
     # Fetch Watermark
-    watermarkfile = Tempfile.new(['watermark', '.png'])
-    download = open(watermark)
-    IO.copy_stream(download, watermarkfile.path)
+    #    watermarkfile = Tempfile.new(['watermark', '.png'])
+    #    download = open(watermark)
+    #    IO.copy_stream(download, watermarkfile.path)
   end
   unless qr.nil?
     qrfile = Tempfile.new(['qr', '.png'])
@@ -271,10 +254,10 @@ post '/print_image' do
   unless watermark.nil?
     # add watermark
 
-    img.combine_options do |c|
-      c.gravity 'SouthEast'
-      c.draw "image Over 20,20 0,0 '#{watermarkfile.path}'"
-    end
+    #    img.combine_options do |c|
+    #      c.gravity 'SouthEast'
+    #      c.draw "image Over 20,20 0,0 '#{watermarkfile.path}'"
+    #    end
   end
 
   unless qr.nil?
@@ -291,6 +274,16 @@ post '/print_image' do
     c.draw "image Over 20,20 70,70 '#{willifile.path}'"
   end
 
+  img.combine_options do |c|
+    c.gravity 'center'
+    c.draw "image Over 0,-300 0,0 'logo-1.png'"
+  end
+
+  img.combine_options do |c|
+    c.gravity 'SouthEast'
+    c.draw "image Over 20,20 0,0 '/opt/FXFCam/brand-1.png'"
+  end
+
   file = Tempfile.new(['picbox', '.jpg'])
 
   # img.write('8.jpg')
@@ -305,17 +298,16 @@ post '/print_image' do
 
   File.unlink(file.path)
   File.unlink(qrfile.path) unless qr.nil?
-  File.unlink(watermarkfile.path) unless watermark.nil?
+  #File.unlink(watermarkfile.path) unless watermark.nil?
   File.unlink(willifile.path)
-  {"a"=>'DONE'}.to_json
-
+  { 'a' => 'DONE' }.to_json
 end
 get '/preview' do
   headers 'Access-Control-Allow-Origin' => '*'
   return_message = {}
   begin
     headers('Content-Type' => 'image/jpeg')
-    if !config["has_cam"]
+    if !config['has_cam']
       File.read('default.jpg')
     else
       controller.preview
@@ -341,11 +333,11 @@ end
 get '*' do |path|
   if File.exist?(File.join(settings.public_folder, path))
     if File.directory?(File.join(settings.public_folder, path))
-      list()
+      list
     else
       send_file File.join(settings.public_folder, path)
     end
   else
-    "Not Found"
+    'Not Found'
   end
 end
